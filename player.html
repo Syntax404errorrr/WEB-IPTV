@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UM IPTV - Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.10/dist/hls.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      padding: 15px;
+      text-align: center;
+      background: #1a1a1a;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    header h1 {
+      font-size: 22px;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .channel-list {
+      width: 260px;
+      background: rgba(31, 31, 31, 0.6);
+      backdrop-filter: blur(14px);
+      padding: 10px;
+      overflow-y: auto;
+      border-right: 1px solid #222;
+    }
+
+    .search-box {
+      margin-bottom: 12px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: rgba(50, 50, 50, 0.7);
+      backdrop-filter: blur(6px);
+      color: white;
+    }
+
+    .channel {
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #ddd;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .channel:hover {
+      background-color: #333;
+      color: #00c6ff;
+    }
+
+    #video-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    video {
+      width: 90%;
+      max-width: 1000px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    footer {
+      text-align: center;
+      padding: 6px 4px;
+      background: rgba(17, 17, 17, 0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    .social-icons {
+      margin-bottom: 4px;
+    }
+
+    .social-icons a {
+      color: white;
+      margin: 0 8px;
+      font-size: 17px;
+      transition: color 0.3s;
+    }
+
+    .social-icons a:hover {
+      color: #00c6ff;
+    }
+
+    .credit {
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>UM IPTV</h1>
+  </header>
+
+  <div id="main">
+    <div class="channel-list" id="channel-list">
+      <div class="search-box">
+        <input type="text" id="search" placeholder="Search channels..." />
+      </div>
+      <h3 style="color:#00c6ff; font-size:16px; margin-bottom:10px; text-align:center;">Channel Lists</h3>
+    </div>
+    <div id="video-container">
+      <video id="video" controls autoplay></video>
+    </div>
+  </div>
+
+  <footer>
+    <div class="social-icons">
+      <a href="https://facebook.com/yourpage" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://youtube.com/yourchannel" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://t.me/yourtelegram" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+    </div>
+    <div class="credit">
+      <i class="fas fa-copyright"></i> 2025 UM IPTV
+    </div>
+  </footer>
+
+  <script>
+    const m3u8Url = "https://raw.githubusercontent.com/Syntax404errorrr/IPTVPH/main/premium.m3u8";
+    const video = document.getElementById("video");
+    const channelList = document.getElementById("channel-list");
+    const searchInput = document.getElementById("search");
+    let allChannels = [];
+
+    function parseM3U8(m3u8Text) {
+      const lines = m3u8Text.split("\n");
+      const channels = [];
+      let current = {};
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith("#EXTINF")) {
+          const titleMatch = line.match(/,(.+)/);
+          current.title = titleMatch ? titleMatch[1] : "Untitled";
+        } else if (line && !line.startsWith("#")) {
+          current.url = line;
+          channels.push({ ...current });
+          current = {};
+        }
+      }
+
+      return channels;
+    }
+
+function loadChannels(channels) {
+  const filtered = channels.filter(c =>
+    c.title && c.title.toLowerCase().includes(searchInput.value.toLowerCase())
+  );
+  const container = channelList;
+  container.innerHTML = `
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search channels..." value="${searchInput.value}" />
+    </div>
+    <h3 style="color:#00c6ff; font-size:16px; margin-bottom:10px; text-align:center;">Channel Lists</h3>
+  `;
+  const input = container.querySelector("#search");
+  input.addEventListener("input", () => loadChannels(allChannels));
+
+  filtered.forEach(channel => {
+    const div = document.createElement("div");
+    div.className = "channel";
+    div.textContent = channel.title;
+    div.onclick = () => playStream(channel.url);
+    container.appendChild(div);
+  });
+}
+
+
+    function playStream(url) {
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = url;
+      }
+    }
+
+    fetch(m3u8Url)
+      .then(response => response.text())
+      .then(data => {
+        allChannels = parseM3U8(data);
+        if (allChannels.length > 0) {
+          playStream(allChannels[0].url);
+          loadChannels(allChannels);
+        } else {
+          channelList.innerHTML += "<div>No channels found.</div>";
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load M3U8:", err);
+        channelList.innerHTML += "<div>Failed to load channels.</div>";
+      });
+  </script>
+</body>
+</html>
