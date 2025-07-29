@@ -185,29 +185,28 @@
     }
 
     function editUser(uid, email) {
-      const newExpiry = prompt(`Enter new expiry date for ${email} (YYYY-MM-DD):`);
-      if (!newExpiry) return;
+    const newExpiry = prompt(`Enter new expiry date for ${email} (format: YYYY-MM-DDTHH:mm:ss.sssZ):`);
+    if (!newExpiry) return;
 
-      const newRole = prompt(`Enter new role for ${email} (user/admin):`, 'user');
-      if (!newRole) return;
+    const parsedDate = new Date(newExpiry);
+    if (isNaN(parsedDate.getTime())) {
+    alert("Invalid date format. Use YYYY-MM-DDTHH:mm:ss.sssZ");
+    return;
+  }
 
-      const newExpiryTimestamp = new Date(newExpiry).getTime();
-      if (isNaN(newExpiryTimestamp)) {
-        alert("Invalid date format.");
-        return;
-      }
+    const newRole = prompt(`Enter new role for ${email} (user/admin):`, 'user');
+    if (!newRole) return;
 
-      database.ref('users/' + uid).update({
-        subscriptionExpires: newExpiryTimestamp,
-        role: newRole
-      }).then(() => {
-        alert("User updated successfully.");
-        loadUsers();
-      }).catch(error => {
-        alert("Error updating user: " + error.message);
-      });
-    }
-
+    database.ref('users/' + uid).update({
+    subscriptionExpires: parsedDate.toISOString(), // save ISO string directly
+    role: newRole
+    }).then(() => {
+    alert("User updated successfully.");
+    loadUsers();
+    }).catch(error => {
+    alert("Error updating user: " + error.message);
+  });
+}
     function logout() {
       auth.signOut().then(() => {
         window.location.href = "index.html";
