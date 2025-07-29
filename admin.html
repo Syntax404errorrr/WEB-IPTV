@@ -75,6 +75,16 @@
       text-align: center;
       margin-top: 15px;
     }
+    button.edit-btn {
+      background: none;
+      border: none;
+      color: #00c6ff;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    button.edit-btn:hover {
+      color: #0072ff;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +101,7 @@
           <th>Created At</th>
           <th>Expires</th>
           <th>Role</th>
+          <th>Edit</th>
         </tr>
       </thead>
       <tbody id="user-list">
@@ -146,6 +157,7 @@
         userList.innerHTML = "";
         snapshot.forEach(child => {
           const user = child.val();
+          const userId = child.key;
           if (user.role === 'user') {
             const row = `
               <tr>
@@ -153,6 +165,9 @@
                 <td>${new Date(user.createdAt).toLocaleString()}</td>
                 <td>${new Date(user.subscriptionExpires).toLocaleString()}</td>
                 <td>${user.role}</td>
+                <td>
+                  <button class="edit-btn" onclick="editUser('${userId}', '${user.email}')">🖉</button>
+                </td>
               </tr>
             `;
             userList.innerHTML += row;
@@ -160,6 +175,30 @@
         });
       }).catch(error => {
         adminError.textContent = error.message;
+      });
+    }
+
+    function editUser(uid, email) {
+      const newExpiry = prompt(`Enter new expiry date for ${email} (YYYY-MM-DD):`);
+      if (!newExpiry) return;
+
+      const newRole = prompt(`Enter new role for ${email} (user/admin):`, 'user');
+      if (!newRole) return;
+
+      const newExpiryTimestamp = new Date(newExpiry).getTime();
+      if (isNaN(newExpiryTimestamp)) {
+        alert("Invalid date format.");
+        return;
+      }
+
+      database.ref('users/' + uid).update({
+        subscriptionExpires: newExpiryTimestamp,
+        role: newRole
+      }).then(() => {
+        alert("User updated successfully.");
+        loadUsers();
+      }).catch(error => {
+        alert("Error updating user: " + error.message);
       });
     }
 
