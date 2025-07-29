@@ -29,11 +29,23 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
     }
 
+    .header-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-content img {
+      height: 28px;
+      width: 28px;
+    }
+
     header h1 {
       font-size: 22px;
       background: linear-gradient(90deg, #00c6ff, #0072ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      display: inline;
     }
 
     #main {
@@ -85,7 +97,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #000;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
     }
 
     video {
@@ -125,7 +138,10 @@
 </head>
 <body>
   <header>
-    <h1>UM IPTV</h1>
+    <div class="header-content">
+      <img src="https://imgur.com/n31oYE4.png" alt="Logo" />
+      <h1>UM IPTV</h1>
+    </div>
   </header>
 
   <div id="main">
@@ -134,6 +150,7 @@
         <input type="text" id="search" placeholder="Search channels..." />
       </div>
       <h3 style="color:#00c6ff; font-size:16px; margin-bottom:10px; text-align:center;">Channel Lists</h3>
+      <div id="channel-items"></div>
     </div>
     <div id="video-container">
       <video id="video" controls autoplay></video>
@@ -154,8 +171,8 @@
   <script>
     const m3u8Url = "https://raw.githubusercontent.com/Syntax404errorrr/IPTVPH/main/premium.m3u8";
     const video = document.getElementById("video");
-    const channelList = document.getElementById("channel-list");
     const searchInput = document.getElementById("search");
+    const channelItems = document.getElementById("channel-items");
     let allChannels = [];
 
     function parseM3U8(m3u8Text) {
@@ -178,29 +195,20 @@
       return channels;
     }
 
-function loadChannels(channels) {
-  const filtered = channels.filter(c =>
-    c.title && c.title.toLowerCase().includes(searchInput.value.toLowerCase())
-  );
-  const container = channelList;
-  container.innerHTML = `
-    <div class="search-box">
-      <input type="text" id="search" placeholder="Search channels..." value="${searchInput.value}" />
-    </div>
-    <h3 style="color:#00c6ff; font-size:16px; margin-bottom:10px; text-align:center;">Channel Lists</h3>
-  `;
-  const input = container.querySelector("#search");
-  input.addEventListener("input", () => loadChannels(allChannels));
+    function loadChannels(channels) {
+      const filtered = channels.filter(c =>
+        c.title && c.title.toLowerCase().includes(searchInput.value.toLowerCase())
+      );
+      channelItems.innerHTML = "";
 
-  filtered.forEach(channel => {
-    const div = document.createElement("div");
-    div.className = "channel";
-    div.textContent = channel.title;
-    div.onclick = () => playStream(channel.url);
-    container.appendChild(div);
-  });
-}
-
+      filtered.forEach(channel => {
+        const div = document.createElement("div");
+        div.className = "channel";
+        div.textContent = channel.title;
+        div.onclick = () => playStream(channel.url);
+        channelItems.appendChild(div);
+      });
+    }
 
     function playStream(url) {
       if (Hls.isSupported()) {
@@ -212,6 +220,8 @@ function loadChannels(channels) {
       }
     }
 
+    searchInput.addEventListener("input", () => loadChannels(allChannels));
+
     fetch(m3u8Url)
       .then(response => response.text())
       .then(data => {
@@ -220,12 +230,12 @@ function loadChannels(channels) {
           playStream(allChannels[0].url);
           loadChannels(allChannels);
         } else {
-          channelList.innerHTML += "<div>No channels found.</div>";
+          channelItems.innerHTML = "<div>No channels found.</div>";
         }
       })
       .catch(err => {
         console.error("Failed to load M3U8:", err);
-        channelList.innerHTML += "<div>Failed to load channels.</div>";
+        channelItems.innerHTML = "<div>Failed to load channels.</div>";
       });
   </script>
 </body>
