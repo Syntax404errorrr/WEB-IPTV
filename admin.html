@@ -8,12 +8,12 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <link rel="icon" href="images/logo.png" type="image/x-icon"> 
-
   <style>
     * {
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
     html, body {
       margin: 0;
       padding: 0;
@@ -22,54 +22,71 @@
       height: 100%;
       width: 100%;
     }
+
     #background-canvas {
       position: fixed;
       top: 0;
       left: 0;
       z-index: 0;
     }
+
     body {
       color: white;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 20px;
     }
+
     .admin-container {
       position: relative;
       z-index: 1;
       background: rgba(30, 30, 30, 0.4);
       backdrop-filter: blur(15px);
       -webkit-backdrop-filter: blur(15px);
-      padding: 40px;
-      width: 90%;
-      max-width: 800px;
+      padding: 30px;
+      width: 100%;
+      max-width: 900px;
       border-radius: 15px;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     }
+
     .admin-header {
       text-align: center;
       margin-bottom: 30px;
     }
+
     .admin-header h1 {
-      font-size: 28px;
+      font-size: 2rem;
       font-weight: 600;
       background: linear-gradient(90deg, #00c6ff, #0072ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+
+    .admin-header p {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
     .user-table {
       width: 100%;
       margin-top: 20px;
       border-collapse: collapse;
+      font-size: 0.9rem;
     }
+
     .user-table th, .user-table td {
-      padding: 12px;
+      padding: 10px;
       text-align: left;
       border-bottom: 1px solid #444;
+      word-break: break-word;
     }
+
     .user-table th {
       background: #333;
     }
+
     .logout-btn {
       margin-top: 30px;
       padding: 12px 20px;
@@ -77,20 +94,23 @@
       color: white;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s;
     }
+
     .logout-btn:hover {
       background: linear-gradient(90deg, #0072ff, #00c6ff);
       transform: translateY(-2px);
     }
+
     .error-message {
       color: #ff4d4d;
       text-align: center;
       margin-top: 15px;
     }
+
     button.edit-btn {
       background: none;
       border: none;
@@ -99,8 +119,62 @@
       border-radius: 6px;
       transition: background 0.2s ease;
     }
+
     button.edit-btn:hover svg {
       stroke: #0072ff;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media screen and (max-width: 768px) {
+      .admin-container {
+        padding: 20px;
+      }
+
+      .admin-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .user-table th, .user-table td {
+        font-size: 0.8rem;
+        padding: 8px;
+      }
+
+      .logout-btn {
+        width: 100%;
+        font-size: 0.95rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .user-table, .user-table thead, .user-table tbody, .user-table th, .user-table td, .user-table tr {
+        display: block;
+        width: 100%;
+      }
+
+      .user-table thead {
+        display: none;
+      }
+
+      .user-table tr {
+        margin-bottom: 15px;
+        border-bottom: 1px solid #444;
+        padding-bottom: 10px;
+      }
+
+      .user-table td {
+        text-align: right;
+        position: relative;
+        padding-left: 50%;
+      }
+
+      .user-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        top: 10px;
+        font-weight: bold;
+        text-align: left;
+      }
     }
   </style>
 </head>
@@ -138,7 +212,6 @@
   </div>
 
   <script>
-    // Firebase setup
     const firebaseConfig = {
       apiKey: "AIzaSyCtJ21ZIcBy8X62J6tjJPlHNXWo5OcnuZg",
       authDomain: "ip-tv-web.firebaseapp.com",
@@ -181,23 +254,22 @@
           const user = child.val();
           const userId = child.key;
           if (user.role === 'user') {
-            const row = `
-              <tr>
-                <td>${user.email}</td>
-                <td>${new Date(user.createdAt).toLocaleString()}</td>
-                <td>${new Date(user.subscriptionExpires).toLocaleString()}</td>
-                <td>${user.role}</td>
-                <td>
-                 <button class="edit-btn" onclick="editUser('${userId}', '${user.email}')" title="Edit User">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="#00c6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                    </svg>
-                  </button>
-                </td>
-              </tr>
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td data-label="Email">${user.email}</td>
+              <td data-label="Created">${new Date(user.createdAt).toLocaleString()}</td>
+              <td data-label="Expires">${new Date(user.subscriptionExpires).toLocaleString()}</td>
+              <td data-label="Role">${user.role}</td>
+              <td data-label="Edit">
+                <button class="edit-btn" onclick="editUser('${userId}', '${user.email}')" title="Edit User">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="#00c6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                  </svg>
+                </button>
+              </td>
             `;
-            userList.innerHTML += row;
+            userList.appendChild(row);
           }
         });
       }).catch(error => {
@@ -235,7 +307,7 @@
       });
     }
 
-    // Line particles animation
+    // Particle animation
     const canvas = document.getElementById("background-canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
