@@ -7,132 +7,52 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-      height: 100%;
-      width: 100%;
-    }
-    #background-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-    body {
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .admin-container {
-      position: relative;
-      z-index: 1;
-      background: rgba(30, 30, 30, 0.4);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      padding: 40px;
-      width: 90%;
-      max-width: 800px;
-      border-radius: 15px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    }
-    .admin-header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .admin-header h1 {
-      font-size: 28px;
-      font-weight: 600;
-      background: linear-gradient(90deg, #00c6ff, #0072ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .user-table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-    .user-table th, .user-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #444;
-    }
-    .user-table th {
-      background: #333;
-    }
-    .logout-btn {
-      margin-top: 30px;
-      padding: 12px 20px;
-      background: linear-gradient(90deg, #00c6ff, #0072ff);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .logout-btn:hover {
-      background: linear-gradient(90deg, #0072ff, #00c6ff);
-      transform: translateY(-2px);
-    }
-    .error-message {
-      color: #ff4d4d;
-      text-align: center;
-      margin-top: 15px;
-    }
-    button.edit-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 6px;
-      transition: background 0.2s ease;
-    }
-    button.edit-btn:hover svg {
-      stroke: #0072ff;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="images/logo.png" type="image/x-icon"> 
 </head>
-<body>
-  <canvas id="background-canvas"></canvas>
+<body class="m-0 p-0 h-screen w-screen bg-black text-white font-sans overflow-hidden flex items-center justify-center relative">
 
-  <div class="admin-container">
-    <div class="admin-header">
-      <h1>Admin Dashboard</h1>
-      <p>Manage users of the UM IPTV</p>
+  <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full z-0 bg-black"></canvas>
+
+  <div class="relative z-10 bg-[rgba(30,30,30,0.4)] backdrop-blur-md rounded-2xl p-6 sm:p-10 w-[90%] max-w-4xl shadow-[0_15px_35px_rgba(0,0,0,0.5)]">
+    
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
+        Admin Dashboard
+      </h1>
+      <p class="text-sm text-gray-300 mt-2">Manage users of the UM IPTV</p>
     </div>
 
-    <table class="user-table" id="user-table">
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Created</th>
-          <th>Expires</th>
-          <th>Role</th>
-          <th>Edit</th>
-        </tr>
-      </thead>
-      <tbody id="user-list">
-        <!-- Users will be loaded here -->
-      </tbody>
-    </table>
+    <!--Table-->
+    <div class="overflow-auto">
+      <table class="w-full text-left border-collapse mt-4 text-sm sm:text-base" id="user-table">
+        <thead>
+          <tr class="bg-gray-800 text-white">
+            <th class="px-4 py-3">Email</th>
+            <th class="px-4 py-3">Created</th>
+            <th class="px-4 py-3">Expires</th>
+            <th class="px-4 py-3">Role</th>
+            <th class="px-4 py-3">Edit</th>
+          </tr>
+        </thead>
+        <tbody id="user-list" class="text-white divide-y divide-gray-600">
+          <!--displaying users-->
+        </tbody>
+      </table>
+    </div>
 
-    <div class="error-message" id="admin-error"></div>
-    
-    <div style="text-align:center;">
-      <button class="logout-btn" onclick="logout()">Logout</button>
+    <!--Error Message-->
+    <div id="admin-error" class="text-red-400 text-center mt-4 hidden"></div>
+
+    <!--Logout-->
+    <div class="text-center mt-6">
+      <button onclick="logout()"
+        class="bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-blue-600 hover:to-cyan-400 text-white font-semibold text-base px-6 py-3 rounded-lg transition-transform transform hover:-translate-y-0.5">
+        Logout
+      </button>
     </div>
   </div>
-
   <script>
     // Firebase setup
     const firebaseConfig = {
