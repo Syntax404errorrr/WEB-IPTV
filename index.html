@@ -7,198 +7,73 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      overflow: hidden;
-    }
-
-    #background-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    background: #000;
-    }
-
-    .login-container {
-      background: rgba(30, 30, 30, 0.4);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border-radius: 15px;
-      padding: 40px;
-      width: 400px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    }
-
-    .login-container:hover {
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .logo h1 {
-      font-size: 28px;
-      font-weight: 600;
-      background: linear-gradient(90deg, #00c6ff, #0072ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #aaa;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 12px 15px;
-      background: rgba(20, 20, 20, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: white;
-      font-size: 16px;
-      transition: all 0.3s ease;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: #0072ff;
-      box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.2);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(90deg, #00c6ff, #0072ff);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(90deg, #0072ff, #00c6ff);
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: #aaa;
-      border: 1px solid #444;
-      margin-top: 10px;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
-    }
-
-    .toggle-form {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #aaa;
-    }
-
-    .toggle-form a {
-      color: #00c6ff;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .toggle-form a:hover {
-      text-decoration: underline;
-    }
-
-    .error-message {
-      color: #ff4d4d;
-      font-size: 14px;
-      margin-top: 5px;
-      text-align: center;
-      display: none;
-    }
-
-    .success-message {
-      color: #4dff88;
-      font-size: 14px;
-      margin-top: 5px;
-      text-align: center;
-      display: none;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="images/logo.png" type="image/x-icon">
 </head>
-<body>
-  <canvas id="background-canvas"></canvas>
-  <div class="login-container" id="login-container">
-    <div class="logo">
-      <h1>UM IPTV</h1>
+<body class="min-h-screen flex items-center justify-center bg-black text-white">
+ <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full z-[-1] bg-black"></canvas>
+
+  <div class="bg-[rgba(30,30,30,0.4)] backdrop-blur-md rounded-2xl p-8 sm:p-10 w-[90%] max-w-md shadow-[0_15px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)]">
+    
+    <!--Logo-->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-semibold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
+        UM IPTV
+      </h1>
     </div>
+
+    <!--Form-->
     <div id="login-form">
-      <div class="form-group">
-        <label for="login-email">Email</label>
-        <input type="email" id="login-email" placeholder="Enter your email">
+      <div class="mb-5">
+        <label for="login-email" class="block text-sm text-gray-400 mb-2">Email</label>
+        <input type="email" id="login-email" placeholder="Enter your email"
+          class="w-full p-3 bg-[rgba(20,20,20,0.7)] border border-white/10 rounded-md text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
       </div>
-      <div class="form-group">
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" placeholder="Enter your password">
+      <div class="mb-5">
+        <label for="login-password" class="block text-sm text-gray-400 mb-2">Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password"
+          class="w-full p-3 bg-[rgba(20,20,20,0.7)] border border-white/10 rounded-md text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
       </div>
-      <div class="error-message" id="login-error"></div>
-      <button class="btn btn-primary" id="login-btn">Login</button>
-      <div class="toggle-form">
-        Don't have an account? <a id="show-register">Register</a>
+      <div id="login-error" class="text-red-400 text-sm text-center mb-4 hidden"></div>
+      <button id="login-btn"
+        class="w-full py-3 rounded-md font-semibold bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-blue-600 hover:to-cyan-400 transition-transform hover:-translate-y-0.5">
+        Login
+      </button>
+      <div class="text-center text-sm text-gray-400 mt-4">
+        Don't have an account?
+        <a id="show-register" class="text-cyan-400 hover:underline cursor-pointer">Register</a>
       </div>
     </div>
 
-    <div id="register-form" style="display: none;">
-      <div class="form-group">
-        <label for="register-email">Email</label>
-        <input type="email" id="register-email" placeholder="Enter your email">
+    <!--Register-->
+    <div id="register-form" class="hidden">
+      <div class="mb-5">
+        <label for="register-email" class="block text-sm text-gray-400 mb-2">Email</label>
+        <input type="email" id="register-email" placeholder="Enter your email"
+          class="w-full p-3 bg-[rgba(20,20,20,0.7)] border border-white/10 rounded-md text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
       </div>
-      <div class="form-group">
-        <label for="register-password">Password</label>
-        <input type="password" id="register-password" placeholder="Create a password">
+      <div class="mb-5">
+        <label for="register-password" class="block text-sm text-gray-400 mb-2">Password</label>
+        <input type="password" id="register-password" placeholder="Create a password"
+          class="w-full p-3 bg-[rgba(20,20,20,0.7)] border border-white/10 rounded-md text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
       </div>
-      <div class="form-group">
-        <label for="register-confirm">Confirm Password</label>
-        <input type="password" id="register-confirm" placeholder="Confirm your password">
+      <div class="mb-5">
+        <label for="register-confirm" class="block text-sm text-gray-400 mb-2">Confirm Password</label>
+        <input type="password" id="register-confirm" placeholder="Confirm your password"
+          class="w-full p-3 bg-[rgba(20,20,20,0.7)] border border-white/10 rounded-md text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
       </div>
-      <div class="error-message" id="register-error"></div>
-      <div class="success-message" id="register-success"></div>
-      <button class="btn btn-primary" id="register-btn">Register</button>
-      <div class="toggle-form">
-        Already have an account? <a id="show-login">Login</a>
+      <div id="register-error" class="text-red-400 text-sm text-center mb-2 hidden"></div>
+      <div id="register-success" class="text-green-400 text-sm text-center mb-2 hidden"></div>
+      <button id="register-btn"
+        class="w-full py-3 rounded-md font-semibold bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-blue-600 hover:to-cyan-400 transition-transform hover:-translate-y-0.5">
+        Register
+      </button>
+      <div class="text-center text-sm text-gray-400 mt-4">
+        Already have an account?
+        <a id="show-login" class="text-cyan-400 hover:underline cursor-pointer">Login</a>
       </div>
     </div>
-  </div>
-
+  </div>  
   <script>
   const canvas = document.getElementById("background-canvas");
   const ctx = canvas.getContext("2d");
